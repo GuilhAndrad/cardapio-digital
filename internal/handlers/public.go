@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"cardapio-digital/internal/models"
+	"errors"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,9 +17,9 @@ func GetMenuBySlug(db *gorm.DB) fiber.Handler {
 
 		// O pulo do gato: aninhamos o Preload para trazer Categorias -> Itens
 		err := db.Preload("Categories.Items").Where("slug = ?", slug).First(&restaurant).Error
-		
+
 		if err != nil {
-			if err == gorm.ErrRecordNotFound {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return c.Status(http.StatusNotFound).JSON(fiber.Map{"erro": "Cardápio não encontrado"})
 			}
 			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"erro": "Erro interno no servidor"})

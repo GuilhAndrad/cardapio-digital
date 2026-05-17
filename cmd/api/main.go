@@ -41,7 +41,7 @@ func main() {
 	// ROTAS ADMINISTRATIVAS (Painel de Controle)
 	// ==========================================
 	admin := app.Group("/api/admin")
-	
+
 	admin.Post("/restaurant", handlers.CreateRestaurant(db))
 	admin.Post("/category", handlers.CreateCategory(db))
 	admin.Post("/item", handlers.CreateItem(db))
