@@ -2,6 +2,7 @@ package main
 
 import (
 	"cardapio-digital/internal/database"
+	"cardapio-digital/internal/handlers"
 	"log"
 	"time"
 
@@ -30,6 +31,20 @@ func main() {
 
 	app.Use(logger.New())
 	app.Use(recover.New())
+
+	// ==========================================
+	// ROTAS PÚBLICAS (Acessadas via QR Code)
+	// ==========================================
+	app.Get("/menu/:slug", handlers.GetMenuBySlug(db))
+
+	// ==========================================
+	// ROTAS ADMINISTRATIVAS (Painel de Controle)
+	// ==========================================
+	admin := app.Group("/api/admin")
+	
+	admin.Post("/restaurant", handlers.CreateRestaurant(db))
+	admin.Post("/category", handlers.CreateCategory(db))
+	admin.Post("/item", handlers.CreateItem(db))
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
