@@ -1,16 +1,18 @@
 package database
 
 import (
+	"cardapio-digital/internal/models"
+	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-func Connect() *gorm.DB {
+func Connect() (*gorm.DB, error) {
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
@@ -24,7 +26,7 @@ func Connect() *gorm.DB {
 		Logger: newLogger,
 	})
 	if err != nil {
-		log.Fatal("Fogo no parquinho: não foi possível conectar ao banco de dados: ", err)
+		return nil, fmt.Errorf("não foi possível conectar ao banco de dados: %w", err)
 	}
 	log.Println("Deus abençoe: a conexão com o banco de dados foi estabelecida com sucesso")
 
@@ -34,5 +36,27 @@ func Connect() *gorm.DB {
 		sqlDB.SetMaxOpenConns(100)          
 		sqlDB.SetConnMaxLifetime(time.Hour)
 	}
-	return db
+	// Aplica as migrações automáticas para criar as tabelas no banco de dados
+	if err := RunMigrations(db); err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+// RunMigrations é responsável por aplicar as migrações automáticas para criar as tabelas no banco de dados
+func RunMigrations(db *gorm.DB) error {
+	err := db.AutoMigrate(
+		&models.Restaurant{},
+		&models.Category{},
+		&models.Item{},
+	)
+
+	if err != nil {
+		log.Printf("Fogo no parquinho: as migrações automáticas falharam: %v", err)
+		return err
+	}
+
+	log.Println("Deus abençoe: as migrações automáticas foram aplicadas com sucesso")
+	return nil
 }

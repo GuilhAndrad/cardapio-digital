@@ -12,7 +12,10 @@ import (
 
 func main() {
 
-	db := database.Connect()
+	db, err := database.Connect()
+	if err != nil {
+		log.Fatal("Fogo no parquinho: não foi possível inicializar o banco de dados: ", err)
+	}
 
 	_ = db
 
